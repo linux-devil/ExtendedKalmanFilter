@@ -21,10 +21,6 @@ void KalmanFilter::Init(VectorXd &x_in, MatrixXd &P_in, MatrixXd &F_in,
 }
 
 void KalmanFilter::Predict() {
-  /**
-  TODO:
-    * predict the state
-  */
   x_ = F_ * x_;
   MatrixXd Ft = F_.transpose();
   P_ = F_ * P_ * Ft + Q_;
@@ -38,9 +34,12 @@ void KalmanFilter::Update(const VectorXd &z) {
   VectorXd z_pred = H_ *x_;
   VectorXd y = z - z_pred;
   MatrixXd Ht = H_.transpose();
+
   MatrixXd S = H_ * P_ * Ht + R_;
+
   MatrixXd Si = S.inverse();
   MatrixXd PHt = P_ * Ht;
+
   MatrixXd K = PHt * Si;
   // new estimates
   x_ = x_ + (K*y);
@@ -58,17 +57,21 @@ void KalmanFilter::UpdateEKF(const VectorXd &z) {
   */
   VectorXd y = z - tools.CartesianToPolar(x_);
   y[1] = tools.WrapAnglePi(y[1]);
+  MatrixXd S = H_ * P_ * H_.transpose() + R_;
+  MatrixXd K = P_ * H_.transpose() * S.inverse();
+  x_ = x_ + (K * y);
+  P_ = (MatrixXd::Identity(4,4) - K * H_) * P_;
 
-  VectorXd Hx = VectorXd(3);
-  float ro = z(0);
-  float phi = z(1);
-  float px = ro*cos(phi);
-  float py = ro*sin(phi);
-  float v = z(2);
-  float vx = v* cos(phi);
-  float vy = v* sin(phi);
-  VectorXd x_state = VectorXd(4);
-  x_state << px,py,vx,vy;
-  MatrixXd Hj = tools.CalculateJacobian(x_state);
+  //VectorXd Hx = VectorXd(3);
+  //float ro = z(0);
+  //float phi = z(1);
+  //float px = ro*cos(phi);
+  //float py = ro*sin(phi);
+  //float v = z(2);
+  //float vx = v* cos(phi);
+  //float vy = v* sin(phi);
+  //VectorXd x_state = VectorXd(4);
+  //x_state << px,py,vx,vy;
+  //MatrixXd Hj = tools.CalculateJacobian(x_state);
 
 }
